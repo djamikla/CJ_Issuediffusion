@@ -14,27 +14,27 @@ library(lubridate)
 # read all rds files (created by data collection ccj_a - ccj_J, use name of rds files as name 
 # for dataframes)
 
-ccj_a <- readRDS("Data/RDS_gesamt/ccj_a.rds")
-ccj_b <- readRDS("Data/RDS_gesamt/ccj_b.rds")
-ccj_c <- readRDS("Data/RDS_gesamt/ccj_c.rds")
-ccj_d <- readRDS("Data/RDS_gesamt/ccj_d.rds")
-ccj_e <- readRDS("Data/RDS_gesamt/ccj_e.rds")
-ccj_f <- readRDS("Data/RDS_gesamt/ccj_f.rds")
-ccj_g <- readRDS("Data/RDS_gesamt/ccj_g.rds")
-ccj_h <- readRDS("Data/RDS_gesamt/ccj_h.rds")
-ccj_I1 <- readRDS("Data/RDS_gesamt/ccj_I1.rds")
-ccj_I1a <- readRDS("Data/RDS_gesamt/ccj_I1a.rds")
-ccj_I1b <- readRDS("Data/RDS_gesamt/ccj_I1b.rds")
-ccj_I1c <- readRDS("Data/RDS_gesamt/ccj_I1c.rds")
-ccj_I1d <- readRDS("Data/RDS_gesamt/ccj_I1d.rds")
-ccj_I1e <- readRDS("Data/RDS_gesamt/ccj_I1e.rds")
-ccj_I1f <- readRDS("Data/RDS_gesamt/ccj_I1f.rds")
-ccj_I2 <- readRDS("Data/RDS_gesamt/ccj_I2.rds")
-ccj_J <- readRDS("Data/RDS_gesamt/ccj_J.rds")
+ccj_a <- readRDS("Data/Twitter/RDS_gesamt/ccj_a.rds")
+ccj_b <- readRDS("Data/Twitter/RDS_gesamt/ccj_b.rds")
+ccj_c <- readRDS("Data/Twitter/RDS_gesamt/ccj_c.rds")
+ccj_d <- readRDS("Data/Twitter/RDS_gesamt/ccj_d.rds")
+ccj_e <- readRDS("Data/Twitter/RDS_gesamt/ccj_e.rds")
+ccj_f <- readRDS("Data/Twitter/RDS_gesamt/ccj_f.rds")
+ccj_g <- readRDS("Data/Twitter/RDS_gesamt/ccj_g.rds")
+ccj_h <- readRDS("Data/Twitter/RDS_gesamt/ccj_h.rds")
+ccj_I1 <- readRDS("Data/Twitter/RDS_gesamt/ccj_I1.rds")
+ccj_I1a <- readRDS("Data/Twitter/RDS_gesamt/ccj_I1a.rds")
+ccj_I1b <- readRDS("Data/Twitter/RDS_gesamt/ccj_I1b.rds")
+ccj_I1c <- readRDS("Data/Twitter/RDS_gesamt/ccj_I1c.rds")
+ccj_I1d <- readRDS("Data/Twitter/RDS_gesamt/ccj_I1d.rds")
+ccj_I1e <- readRDS("Data/Twitter/RDS_gesamt/ccj_I1e.rds")
+ccj_I1f <- readRDS("Data/Twitter/RDS_gesamt/ccj_I1f.rds")
+ccj_I2 <- readRDS("Data/Twitter/RDS_gesamt/ccj_I2.rds")
+ccj_J <- readRDS("Data/Twitter/RDS_gesamt/ccj_J.rds")
 
 
 
-# 1. unnest relevant nested variables in each dataframe
+# unnest relevant nested variables in each dataframe
 # variables needed: text, id, public_metrics (nested: retweet_count, reply_count, like_count, 
 # quote_count, impression_count), author_id, created_at, lang, withheld 
 # (nested: country_codes), geo (double nested: place_id,types, coordinates)  
@@ -74,11 +74,11 @@ CCJ_J <- unnest(ccj_J, cols = c(public_metrics, geo, withheld))
 CCJ_J <- unnest(CCJ_J, cols = c(coordinates))
 
 
-#2. select only needed variables for each dataframe: text, id, retweet_count, reply_count, 
-#like_count, quote_count, impression_count, author_id, created_at, lang, country_codes,
-#place_id,types, coordinates 
+# select only needed variables for each dataframe: text, id, retweet_count, reply_count, 
+# like_count, quote_count, impression_count, author_id, created_at, lang, country_codes,
+# place_id,types, coordinates 
 
-# 3. combine all dataframes in one big dataframe ("twitter"), containing only the needed variables 
+# combine all dataframes in one big dataframe ("twitter"), containing only the needed variables 
 # dataframes in which relevant variables are not existent: add NA as value for theses variables 
  Twitter_CJ<- bind_rows(CCJ_a,CCJ_b,CCJ_c,CCJ_d,CCJ_e,CCJ_f,CCJ_g,
             CCJ_h,CCJ_I1,CCJ_I1a,CCJ_I1b,CCJ_I1c,
@@ -87,20 +87,20 @@ CCJ_J <- unnest(CCJ_J, cols = c(coordinates))
             like_count, quote_count, impression_count,
             author_id, created_at, lang, country_codes,
             place_id, type, coordinates))
+    #1301192 cases
  
-#exclude duplicates (resulted from overlapping queries)
-
-Twitter_CJ <- unique(Twitter_CJ)
-
-
-## Dataframe twitter is only to be including the terms: "climate justice", "climatejustice" etc. (not "climate" or "justice")
-
-Twitter_CJ <- Twitter_CJ %>% filter(str_detect(text, "climate justice|Climate Justice|climatejustice|ClimateJustice|Climatejustice|Climate justice|climate Justice |climateJustice"))
-
 #remove unused dataframes
 rm(ccj_a, ccj_b,ccj_c,ccj_d,ccj_e,ccj_f,ccj_g,ccj_h,ccj_I1,ccj_I1a,ccj_I1b,ccj_I1c,ccj_I1d,ccj_I1e,ccj_I1f,ccj_I2,ccj_J)
 rm(CCJ_a, CCJ_b,CCJ_c,CCJ_d,CCJ_e,CCJ_f,CCJ_g,CCJ_h,CCJ_I1,CCJ_I1a,CCJ_I1b,CCJ_I1c,CCJ_I1d,CCJ_I1e,CCJ_I1f,CCJ_I2,CCJ_J)
+ 
+#### identify and exclude duplicates according to id (cause by overlappting data aquisition periods)
+Twitter_CJ <- Twitter_CJ %>%
+  distinct(id, .keep_all = TRUE)
+  # 1255723
 
+## Dataframe twitter is only to be including the terms: "climate justice", "climatejustice" etc. (not "climate" and "justice")
+Twitter_CJ2 <- Twitter_CJ %>% filter(str_detect(text, "climate justice|Climate Justice|climatejustice|ClimateJustice|Climatejustice|Climate justice|climate Justice |climateJustice | CLIMATEJUSTICE |CLIMATE JUSTICE"))
+  # 832021 cases
 
 
 #################################################################################
@@ -108,7 +108,8 @@ rm(CCJ_a, CCJ_b,CCJ_c,CCJ_d,CCJ_e,CCJ_f,CCJ_g,CCJ_h,CCJ_I1,CCJ_I1a,CCJ_I1b,CCJ_I
 #################################################################################
 
 # read dataframe "klimagerechtigkeit"
-twitter_KG <- readRDS("Data/KG.rds")
+twitter_KG <- readRDS("Data/Twitter/KG.rds")
+  #50408 cases
 
 
 # unnesting of relevant nested variables
@@ -122,13 +123,13 @@ Twitter_KG <- bind_rows(Twitter_KG) %>%
            author_id, created_at, lang, country_codes,
            place_id, type, coordinates))
 
-
 ################################################################################
 ### Justicia Climatica ###
 ################################################################################
 
 # read dataframe "justicia climatica"
-twitter_JC <- readRDS("Data/JC.rds")
+twitter_JC <- readRDS("Data/Twitter/JC.rds")
+  #57972 cases
 
 # unnesting of relevant nested variables
 Twitter_JC <- unnest(twitter_JC, cols = c(public_metrics, withheld, geo))
@@ -140,6 +141,10 @@ Twitter_JC <- bind_rows(Twitter_JC) %>%
            like_count, quote_count, impression_count,
            author_id, created_at, lang, country_codes,
            place_id, type, coordinates))
+
+## Dataframe twitter is only to be including the terms: "justicia climatica", "justiciaclimatica" etc. (not "justicia" and "climatica") justiciaclimática
+Twitter_JC <- Twitter_JC %>% filter(str_detect(text, "justicia climatica|justicia climática|Justicia Climatica|Justicia Climática|justiciaclimatica|justiciaclimática|JusticiaClimatica|JusticiaClimática|Justiciaclimatica|Justiciaclimática|Justicia climatica|Justicia climática|justicia Climatica|justicia Climática|justiciaClimatica|justiciaClimática|JUSTICIA CLIMÁTICA|JUSTICIA CLIMATICA"))
+  # 42784 cases
 
 #remove unused dataframes
 rm(twitter_JC, twitter_KG)
@@ -153,10 +158,7 @@ Twitter_KG$source <- "KG"
 
 # Combine the dataframes
 joint_twitter <- bind_rows(Twitter_CJ, Twitter_JC, Twitter_KG)
-
-# export dataframe
-save(joint_twitter, file = "Data//joint_twitter.RData")
-
+  #1348915
 
 #### check for duplicates ####
 # Identify duplicates (excluding "source" column)
@@ -166,7 +168,10 @@ duplicates <- joint_twitter %>%
 
 # Subset the dataframe to show only duplicates
 duplicated_data <- joint_twitter[duplicates, ]
-joint_twitter_test2 <- anti_join(joint_twitter, duplicated_data, by = "text")
+
+# exclude duplicates
+joint_twitter <- anti_join(joint_twitter, duplicated_data, by = "id")
+  # 872626 cases
 
 #### export final dataframe ####
 
